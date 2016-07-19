@@ -1,6 +1,6 @@
 # ngram-frequency-analysis
 
-This is a badly-written, overcomplicated python script that parses files and exports the frequency of n-word phrases. I'm not even entirely sure that buzzword means what I think it means, I just took it from benbalters' frequency-analysis repo.
+This is a badly-written, overcomplicated python script that parses files and exports the frequency of n-grams. In other words, n-word phrases.
 
 ### Some Information
 
