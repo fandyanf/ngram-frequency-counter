@@ -9,12 +9,12 @@ import shutil
 import sqlite3
 import os
 
-foldername = "input"
+foldername = "testfolder"
 dirpath = ".\\"+ foldername + "\\*"
 inputlist = glob.glob(dirpath)
 
 ###
-plengths = (1,2)
+plengths = (1,)
 minfreq = 5 #False or number
 minrank = False #False or number,
 exclude1 = True
@@ -23,7 +23,7 @@ exclude1 = True
 ###DEBUG
 deletetemps = False
 maxchunksize = 20000 #determines how many phrases can be in a list before they're written to the table
-retrievechunksize = maxchunksize #determines how many phrases can be retrieved from the table at a time
+retrievechunksize = (10,) #determines how many phrases can be retrieved from the table at a time
 ###DEBUG
 	
 def check_plengths(plengths):
@@ -111,7 +111,7 @@ def create_sortedlists(inputlist,cs,conns):
 					current_chunk_size = 0
 				elif current_chunk_size <= maxchunksize: pass #don't put "current_chunk_size += 1" here, otherwise phrase_chunk is actually max+1 phrases
 				else: sys.exit("something wrong with the current chunk counter")
-			addtodatabase(phrase_chunk,cs[x],x)
+			cs[x].executemany("INSERT INTO phrases (gram) VALUES (?)", phrase_chunk)
 		print(" done.")
 		filehandle.close
 	print("done processing files.")
@@ -124,20 +124,48 @@ def create_sortedlists(inputlist,cs,conns):
 	print("done	with that.")
 	return numoflines
 
-
-	
 check_plengths(plengths)
 databases, conns, cs = setup_databases(plengths)
 numoflines = create_sortedlists(inputlist,cs,conns)
 
-#plengths = ()
-#minfreq = #False or number
-#minrank = #False or number,
+n=1
 
+templimit = 100
 
-for x in plengths: 
+phrases = list()
+while True:
+	if len(phrases) < templimit:
+		cs[n].execute("SELECT * FROM sorted_phrases LIMIT(?)", (templimit,))
+		phrases.extend(cs[n].fetchall())
+		cs[n].execute("DELETE FROM sorted_phrases WHERE ROWID IN (SELECT ROWID FROM sorted_phrases LIMIT (?))", (templimit,))
+	if len(phrases) == 0:break
+
+	phrase = phrases[1]
+	phrases.remove(phrases[1])
+	count=1
+	rollover = 0
+
+	while True:
+		if phrase != phrases[1]:
+			print(count,phrase)
+			break
+		elif phrase == phrases[1]:
+			count = count+1
+			phrases.remove(phrases[1])
+'''
+
+			try: 
+				tmp = phrases[1]
+			except:
+				cs[n].execute("SELECT * FROM sorted_phrases LIMIT(?)", (templimit,))
+				phrases.extend(cs[n].fetchall())
+				cs[n].execute("DELETE FROM sorted_phrases WHERE ROWID IN (SELECT ROWID FROM sorted_phrases LIMIT (?))", (templimit,))
+'''
+for x in plengths:
 	if deletetemps == True:
 		print("removing " + databases[x]+"...")
 		try: os.remove(databases[x])
 		except: print(str(databases[x])+" is in use. won't get deleted.")
 	conns[x].close()
+	
+print
