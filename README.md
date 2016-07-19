@@ -1,4 +1,4 @@
-# phrase-frequency-analysis
+# ngram-frequency-analysis
 
 This is a badly-written, overcomplicated python script that parses files and exports the frequency of n-word phrases. I'm not even entirely sure that buzzword means what I think it means, I just took it from benbalters' frequency-analysis repo.
 
@@ -18,10 +18,7 @@ This is a badly-written, overcomplicated python script that parses files and exp
     -put desired text files into the folder titled, "input"
     -run frequency.py
     -wait an unnecessary amount of time for it to chew through the files 
-        -because this uses an unnecessary amount of resources
-            -because i'm terrible at writing code
-    -get analysis in text files in the export folder
-		text files can probably be opened as .csv
+    -get analysis in csv files in the export folder
 		
 #### Defaults
 	-the minimum frequency a phrase needs to show up in the analyses is 5.
@@ -47,8 +44,10 @@ The other two texts, the Federalist Papers and The Adventures of Sherlock Holmes
 
 #### To-Do List
 	
-	-take out sqlite3. I realized how to do it 1 hour after i finished, but I'm too tired right now.
 	-script can exclude phrases of any length
 	
 #### Timeline
 	2016-07-14 Made a script, shoddy but functional (in the sense that wind erosion functions as sandpaper)
+	2016-07-15 Nuked my old repo (phrase-frequency-analysis) and half the script because it was embarassingly terrible.
+	2016-07-16 Moved what remained of the old script (lost some stuff due to ragequitting) into testfolder
+	2016-07-18 Made a more efficient but incomplete n-gram counter.
