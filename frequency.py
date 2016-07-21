@@ -9,8 +9,20 @@ import shutil
 import sqlite3
 import os
 
-foldername = "testfolder"
+###DEBUG
+deletetemps = False
+maxchunksize = 20000 #determines how many phrases can be in a list before they're written to the table
+retrievechunksize = 4000 #determines how many phrases can be retrieved from the table at a time
+
+if os.name == 'nt':
+    Windows = True
+else:
+    Windows = False
+###DEBUG
+
+foldername = "input"
 dirpath = ".\\"+ foldername + "\\*"
+if Windows == False: dirpath = "./"+foldername+"/*"
 inputlist = glob.glob(dirpath)
 
 ###
@@ -20,11 +32,7 @@ minrank = False #False or number,
 exclude1 = True
 ###
 
-###DEBUG
-deletetemps = False
-maxchunksize = 20000 #determines how many phrases can be in a list before they're written to the table
-retrievechunksize = (10,) #determines how many phrases can be retrieved from the table at a time
-###DEBUG
+
 	
 def check_plengths(plengths):
 #	ngramlists=dict()
@@ -39,7 +47,7 @@ def setup_databases(plengths):
 	cursors = dict()
 	for n in plengths: 
 		databases[n] = str(n) + ".sqlite3"
-		open(databases[n],"w+")
+		open(databases[n],"w+",encoding = "ISO-8859-1")
 		
 		connections[n] = sqlite3.connect(databases[n])
 		cursors[n] = connections[n].cursor()
@@ -65,7 +73,9 @@ def sanitize(string):
 def compile_exclude1():
 	#used in create_lists
 	excludeonelist = list()
-	with open(".\\phrasestoexclude\\excludelength1.txt","r") as exfile:
+	if Windows == True: fp = ".\\phrasestoexclude\\excludelength1.txt"
+	elif Windows == False: fp = "./phrasestoexclude/excludelength1.txt"
+	with open(fp,"r",encoding = "ISO-8859-1") as exfile:
 		for line in exfile:
 			phrase = line.strip("\r")
 			phrase = phrase.strip("\n")
@@ -86,7 +96,7 @@ def create_sortedlists(inputlist,cs,conns):
 	
 	for filepath in inputlist:
 		print("processing this file:", filepath, end='')
-		filehandle = open(filepath,"r")
+		filehandle = open(filepath,"r",encoding = "ISO-8859-1")
 		filestring = filehandle.read()
 		
 		words = sanitize(filestring)
@@ -129,19 +139,47 @@ databases, conns, cs = setup_databases(plengths)
 numoflines = create_sortedlists(inputlist,cs,conns)
 
 n=1
-
-templimit = 100
-
+#retrievechunksize = 100
 phrases = list()
-while True:
-	if len(phrases) < templimit:
-		cs[n].execute("SELECT * FROM sorted_phrases LIMIT(?)", (templimit,))
-		phrases.extend(cs[n].fetchall())
-		cs[n].execute("DELETE FROM sorted_phrases WHERE ROWID IN (SELECT ROWID FROM sorted_phrases LIMIT (?))", (templimit,))
-	if len(phrases) == 0:break
 
+while True:
+	if len(phrases) < 5:
+		cs[n].execute("SELECT * FROM sorted_phrases LIMIT(?)", (retrievechunksize,))
+		phrases.extend(cs[n].fetchall())
+		cs[n].execute("DELETE FROM sorted_phrases WHERE ROWID IN (SELECT ROWID FROM sorted_phrases LIMIT (?))", (retrievechunksize,))
+		#print("adding")
+	if len(phrases) <= 2:break
+    
 	phrase = phrases[1]
 	phrases.remove(phrases[1])
+	
+	if phrase == phrases[len(phrases)-1]:
+			try: rollover += len(phrases)
+			except: rollover = len(phrases)
+			phrases = (phrase,)
+			continue
+        
+	count = 1
+	while True:
+		#print(len(phrases))
+		if phrase != phrases[1]:
+			try: count += rollover
+			except: pass
+			print(phrase, count)
+			count = 0
+			rollover = 0
+			break
+		elif phrase == phrases[1]:
+			count += 1
+			phrases.remove(phrases[1])
+		else: sys.exit("something went wrong",phrase,count,rollover)
+                
+        
+        
+
+'''
+while True:
+
 	count=1
 	rollover = 0
 
@@ -152,7 +190,7 @@ while True:
 		elif phrase == phrases[1]:
 			count = count+1
 			phrases.remove(phrases[1])
-'''
+
 
 			try: 
 				tmp = phrases[1]
@@ -168,4 +206,3 @@ for x in plengths:
 		except: print(str(databases[x])+" is in use. won't get deleted.")
 	conns[x].close()
 	
-print
