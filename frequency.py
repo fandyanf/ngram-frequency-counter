@@ -4,8 +4,7 @@ import re
 import fileinput
 import random
 import sys
-import shutil
-#import fuckit
+#import shutil
 import sqlite3
 import os
 
@@ -96,6 +95,7 @@ def create_sortedlists(inputlist,cs,conns):
 	
 	for filepath in inputlist:
 		print("processing this file:", filepath, end='')
+		time.sleep(.001)
 		filehandle = open(filepath,"r",encoding = "ISO-8859-1")
 		filestring = filehandle.read()
 		
@@ -126,79 +126,57 @@ def create_sortedlists(inputlist,cs,conns):
 		filehandle.close
 	print("done processing files.")
 
-	print("writing phrases to disk and alphabetizing...")
+	print("writing phrases to disk and alphabetizing...",end="")
 	for x in plengths: 
 		cs[x].execute('CREATE TABLE sorted_phrases as SELECT * FROM phrases ORDER BY gram ASC')
 		if deletetemps == True: cs[x].execute('DROP TABLE phrases')
 		conns[x].commit()
-	print("done	with that.")
+	print(" done.")
+	time.sleep(.001)
 	return numoflines
 
 check_plengths(plengths)
 databases, conns, cs = setup_databases(plengths)
 numoflines = create_sortedlists(inputlist,cs,conns)
 
-n=1
-#retrievechunksize = 100
-phrases = list()
+print("finding frequencies of phrases...",end="")
+time.sleep(.001)
 
-while True:
-	if len(phrases) < 5:
-		cs[n].execute("SELECT * FROM sorted_phrases LIMIT(?)", (retrievechunksize,))
-		phrases.extend(cs[n].fetchall())
-		cs[n].execute("DELETE FROM sorted_phrases WHERE ROWID IN (SELECT ROWID FROM sorted_phrases LIMIT (?))", (retrievechunksize,))
-		#print("adding")
-	if len(phrases) <= 2:break
-    
-	phrase = phrases[1]
-	phrases.remove(phrases[1])
-	
-	if phrase == phrases[len(phrases)-1]:
-			try: rollover += len(phrases)
-			except: rollover = len(phrases)
-			phrases = (phrase,)
-			continue
-        
-	count = 1
+for n in plengths:
+	phrases = list()
 	while True:
-		#print(len(phrases))
-		if phrase != phrases[1]:
-			try: count += rollover
-			except: pass
-			print(phrase, count)
-			count = 0
-			rollover = 0
-			break
-		elif phrase == phrases[1]:
-			count += 1
-			phrases.remove(phrases[1])
-		else: sys.exit("something went wrong",phrase,count,rollover)
-                
-        
-        
+		if len(phrases) < 5:
+			cs[n].execute("SELECT * FROM sorted_phrases LIMIT(?)", (retrievechunksize,))
+			phrases.extend(cs[n].fetchall())
+			cs[n].execute("DELETE FROM sorted_phrases WHERE ROWID IN (SELECT ROWID FROM sorted_phrases LIMIT (?))", (retrievechunksize,))
+			#print("adding")
+		if len(phrases) <= 2:break
+		
+		phrase = phrases[1]
+		phrases.remove(phrases[1])
+		
+		if phrase == phrases[len(phrases)-1]:
+				try: rollover += len(phrases)
+				except: rollover = len(phrases)
+				phrases = [phrase,]
+				continue
+			
+		count = 1
+		while True:
+			#print(len(phrases))
+			if phrase != phrases[1]:
+				try: count += rollover
+				except: pass
+				###print(phrase, count)
+				count = 0
+				rollover = 0
+				break
+			elif phrase == phrases[1]:
+				count += 1
+				phrases.remove(phrases[1])
+			else: sys.exit("something went wrong",phrase,count,rollover)
+print(" done.")
 
-'''
-while True:
-
-	count=1
-	rollover = 0
-
-	while True:
-		if phrase != phrases[1]:
-			print(count,phrase)
-			break
-		elif phrase == phrases[1]:
-			count = count+1
-			phrases.remove(phrases[1])
-
-
-			try: 
-				tmp = phrases[1]
-			except:
-				cs[n].execute("SELECT * FROM sorted_phrases LIMIT(?)", (templimit,))
-				phrases.extend(cs[n].fetchall())
-				cs[n].execute("DELETE FROM sorted_phrases WHERE ROWID IN (SELECT ROWID FROM sorted_phrases LIMIT (?))", (templimit,))
-'''
 for x in plengths:
 	if deletetemps == True:
 		print("removing " + databases[x]+"...")
