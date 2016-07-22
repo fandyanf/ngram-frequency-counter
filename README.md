@@ -17,7 +17,7 @@ This is a badly-written, overcomplicated python script that parses files and exp
     -get analysis in csv files in the export folder
 		
 #### Defaults
-		-1-word and 2-word phrases are analyzed.
+	-1-word and 2-word phrases are analyzed.
 		-to change it, change plengths=
 		-want only one n-word phrase to be analyzed? it should look like this: (x,)
 		  -where x is the number of words
@@ -43,4 +43,4 @@ The other two texts, the Federalist Papers and The Adventures of Sherlock Holmes
 	2016-07-15 Nuked my old repo (phrase-frequency-analysis) and half the script because it was embarassingly terrible.
 	2016-07-16 Moved what remained of the old script (lost some stuff due to ragequitting) into testfolder
 	2016-07-18 Made a more efficient but incomplete n-gram counter.
-  2016-07-21 Finished the basic script, but doesn't auto-sort,exclude, or limit ranks
+	2016-07-21 Finished the basic script, but doesn't auto-sort,exclude, or limit ranks
