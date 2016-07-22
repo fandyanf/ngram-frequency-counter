@@ -197,4 +197,8 @@ for x in plengths:
 		try: os.remove(databases[x])
 		except: print(str(databases[x])+" is in use. won't get deleted.")
 	conns[x].close()
-	
+
+#I almost forgot to say something else
+#But if I can't fit it in, i'll keep it all to myself
+#I almost referenced you, in my code today
+#But then I deleted the egg and replaced it with Cake
