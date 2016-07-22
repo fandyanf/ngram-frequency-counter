@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 import glob
 import time
 import re
@@ -142,8 +144,18 @@ numoflines = create_sortedlists(inputlist,cs,conns)
 print("finding frequencies of phrases...",end="")
 time.sleep(.001)
 
+analyses = dict()
 for n in plengths:
 	phrases = list()
+	
+	analysis_name = ""+str(n)+".csv"
+	if Windows == False: analyses[n] = "./output/length"+analysis_name+""
+	elif Windows == True: analyses[n] = ".\\output\\"+analysis_name+""
+	
+	open(analyses[n],"w+",encoding="utf8")
+	analysis_handle = open(analyses[n],"a+",encoding="utf8")
+	
+	#frequencies = open(r"./output/length"+str(n)+".csv","a+",encoding="utf8")
 	while True:
 		if len(phrases) < 5:
 			cs[n].execute("SELECT * FROM sorted_phrases LIMIT(?)", (retrievechunksize,))
@@ -168,6 +180,7 @@ for n in plengths:
 				try: count += rollover
 				except: pass
 				###print(phrase, count)
+				analysis_handle.write(str(count)+"\t"+str(phrase)+"\n")
 				count = 0
 				rollover = 0
 				break
@@ -176,6 +189,7 @@ for n in plengths:
 				phrases.remove(phrases[1])
 			else: sys.exit("something went wrong",phrase,count,rollover)
 print(" done.")
+
 
 for x in plengths:
 	if deletetemps == True:
