@@ -27,7 +27,7 @@ if Windows == False: dirpath = "./"+foldername+"/*"
 inputlist = glob.glob(dirpath)
 
 ###
-plengths = (1,)
+plengths = (1,2)
 minfreq = 5 #False or number
 minrank = False #False or number,
 exclude1 = True
