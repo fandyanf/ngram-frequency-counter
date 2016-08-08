@@ -27,7 +27,7 @@ if Windows == False: dirpath = "./"+foldername+"/*"
 inputlist = glob.glob(dirpath)
 
 ###
-plengths = (1,2)
+plengths = (1,2,3,4)
 minfreq = 5 #False or number
 minrank = False #False or number,
 exclude1 = True
@@ -127,7 +127,7 @@ def create_sortedlists(inputlist,cs,conns):
 		print(" done.")
 		filehandle.close
 	print("done processing files.")
-
+	time.sleep(0.01)
 	print("writing phrases to disk and alphabetizing...",end="")
 	for x in plengths: 
 		cs[x].execute('CREATE TABLE sorted_phrases as SELECT * FROM phrases ORDER BY gram ASC')
@@ -159,7 +159,9 @@ for n in plengths:
 	while True:
 		if len(phrases) < 5:
 			cs[n].execute("SELECT * FROM sorted_phrases LIMIT(?)", (retrievechunksize,))
+			
 			phrases.extend(cs[n].fetchall())
+			
 			cs[n].execute("DELETE FROM sorted_phrases WHERE ROWID IN (SELECT ROWID FROM sorted_phrases LIMIT (?))", (retrievechunksize,))
 			#print("adding")
 		if len(phrases) <= 2:break
@@ -179,8 +181,8 @@ for n in plengths:
 			if phrase != phrases[1]:
 				try: count += rollover
 				except: pass
-				###print(phrase, count)
-				analysis_handle.write(str(count)+"\t"+str(phrase)+"\n")
+				#print(phrase[0])
+				analysis_handle.write(str(count)+","+str(phrase[0])+"\n")
 				count = 0
 				rollover = 0
 				break
